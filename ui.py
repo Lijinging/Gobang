@@ -21,6 +21,7 @@ class GoBang:
         self.stone_b = pygame.image.load(r"res/stone_b.png")
         self.background = pygame.image.load(r"res/background.jpg")
         self.map = [[S_NULL for col in range(self.big)] for row in range(self.big)]
+        self.s_last = None
 
         pygame.init()
         self.window_size = (width, height) = (space * 2 + (big - 1) * size, space * 2 + (big - 1) * size)
@@ -47,8 +48,9 @@ class GoBang:
     def add_chess(self, pos_x, pos_y, type):
         if gobang.update_map(pos_x, pos_y, type):
             gobang.draw_chess(pos_x, pos_y, type, edge=False)
+            self.s_last = [pos_x, pos_y]
             return True
-        return  False
+        return False
 
     def draw_chess(self, pos_x, pos_y, type, edge=False):
         x = gobang.space + pos_x * gobang.size - gobang.stone_b.get_width() / 2
@@ -69,11 +71,28 @@ class GoBang:
         for (i, j) in [(i, j) for i in range(self.big) for j in range(self.big)]:
             if self.map[i][j] != S_NULL:
                 self.draw_chess(i, j, self.map[i][j])
+        self.draw_last_box()
 
     def generate_map(self):
         for (i, j) in [(i, j) for i in range(self.big) for j in range(self.big)]:
             index = random.randint(0, 2)
             self.map[i][j] = S_LIST[index]
+
+    def draw_box(self, x, y):
+        if x >= 0 and x < self.big and y >= 0 and y < self.big:
+            pygame.draw.aalines(self.screen, (80, 100, 160), True,
+                                [(self.space + (x - 0.5) * self.size, self.space + (y - 0.5) * self.size),
+                                 (self.space + (x - 0.5) * self.size, self.space + (y + 0.5) * self.size),
+                                 (self.space + (x + 0.5) * self.size, self.space + (y + 0.5) * self.size),
+                                 (self.space + (x + 0.5) * self.size, self.space + (y - 0.5) * self.size)], 1)
+
+    def draw_last_box(self):
+        if self.s_last != None:
+            pygame.draw.aalines(self.screen, (110, 110, 110), True,
+                                [(self.space + (self.s_last[0] - 0.5) * self.size, self.space + (self.s_last[1] - 0.5) * self.size),
+                                 (self.space + (self.s_last[0] - 0.5) * self.size, self.space + (self.s_last[1] + 0.5) * self.size),
+                                 (self.space + (self.s_last[0] + 0.5) * self.size, self.space + (self.s_last[1] + 0.5) * self.size),
+                                 (self.space + (self.s_last[0] + 0.5) * self.size, self.space + (self.s_last[1] - 0.5) * self.size)], 1)
 
 
 gobang = GoBang()
@@ -82,6 +101,8 @@ fps_clock = pygame.time.Clock()
 cnt = 0
 
 while True:
+
+
     for event in pygame.event.get():
         if event.type == QUIT:
             exit()
@@ -90,15 +111,27 @@ while True:
             # 计算对应的左边
             pos_x = int(((x - gobang.space) + gobang.size / 2) / gobang.size)
             pos_y = int(((y - gobang.space) + gobang.size / 2) / gobang.size)
-            print(pos_x, pos_y)
+            # print(pos_x, pos_y)
             x = gobang.space + pos_x * gobang.size - gobang.stone_b.get_width() / 2
             y = gobang.space + pos_y * gobang.size - gobang.stone_b.get_height() / 2
-            if cnt % 2 == 0:
-                type = S_BLACK
-            else:
-                type = S_WHITE
-            if gobang.add_chess(pos_x, pos_y, type):
+            if gobang.add_chess(pos_x, pos_y, S_BLACK):
+                gobang.show_map()
+                pygame.display.update()
+                s_next = ai_next(gobang.map)
+                print("AI:", s_next)
+                while gobang.add_chess(s_next[0], s_next[1], S_WHITE) is False:
+                    s_next = ai_next(gobang.map)
+                    print("RE AI:", s_next)
+                gobang.show_map()
                 cnt = cnt + 1
+        if event.type == MOUSEMOTION:
+            x, y = pygame.mouse.get_pos()
+            # 计算对应的左边
+            pos_x = int(((x - gobang.space) + gobang.size / 2) / gobang.size)
+            pos_y = int(((y - gobang.space) + gobang.size / 2) / gobang.size)
+            gobang.show_map()
+            gobang.draw_box(pos_x, pos_y)
+
         if event.type == pygame.locals.KEYDOWN:
             print(event.key)
             # 按键 g
@@ -113,67 +146,3 @@ while True:
     pygame.display.update()
     fps_clock.tick(frames_per_sec)
 
-
-
-    # space = 10
-    # size = 30
-    # big = 15
-    #
-    # pygame.init()
-    # window_size = (width, height) = (space * 2 + (big - 1) * size, space * 2 + (big - 1) * size)
-    # color_white = (255, 255, 255)
-    # screen = pygame.display.set_mode(window_size, 0, 32) #创建窗口，尺寸为640*480，色深度为32
-    # screen.fill(color_white)
-    # pygame.display.set_caption("GoBang") #设置窗口标题
-    # stone_w = pygame.image.load(r"res/stone_w.png")
-    # stone_b = pygame.image.load(r"res/stone_b.png")
-    #
-    # def draw_board(space = 10, size=30):
-    #    for i in range(15):
-    #        pygame.draw.aaline(screen, (0, 0, 0), (space, space + i * size), (space + 14 * size, space + i * size), 1)
-    #        pygame.draw.aaline(screen, (0, 0, 0), (space + i * size, space), (space + i * size, space + 14 * size), 1)
-    #    pass
-    #
-    # def draw_chess(x, y, c, edge = False):
-    #    x = x
-    #    y = y
-    #    if c == 'w':
-    #        screen.blit(stone_w, (x, y))
-    #    else:
-    #        screen.blit(stone_b, (x, y))
-    #
-    #
-    # frames_per_sec = 30
-    # fps_clock = pygame.time.Clock()
-    # cnt = 0
-    # draw_board()
-    #
-    # while True:
-    #    for event in pygame.event.get():
-    #        if event.type == QUIT:
-    #            exit()
-    #        if event.type == MOUSEBUTTONDOWN:
-    #            x, y = pygame.mouse.get_pos()
-    #
-    #
-    #            #计算对应的左边
-    #            pos_x = int(((x - space) + size / 2) / size)
-    #            pos_y = int(((y - space) + size / 2) / size)
-    #            print(pos_x, pos_y)
-    #            x = space + pos_x * size - stone_b.get_width() / 2
-    #            y = space + pos_y * size - stone_b.get_height() / 2
-    #
-    #            if cnt % 2 == 0:
-    #                draw_chess(x, y, 'b', edge=False)
-    #            else:
-    #                draw_chess(x, y, 'w', edge=False)
-    #            cnt = cnt + 1
-    #
-    #
-    #
-    #
-    #
-    #    pygame.display.update()
-    #    fps_clock.tick(frames_per_sec)
-    #
-    #
