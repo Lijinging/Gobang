@@ -4,6 +4,7 @@ import pygame
 from pygame.locals import *
 from sys import exit
 import random
+from algorithm import *
 
 S_NULL = 'n'
 S_BLACK = 'b'
@@ -38,6 +39,10 @@ class GoBang:
                                (self.space + 14 * self.size, self.space + i * self.size), 1)
             pygame.draw.aaline(self.screen, (60, 60, 60), (self.space + i * self.size, self.space),
                                (self.space + i * self.size, self.space + 14 * self.size), 1)
+
+    def clear(self):
+        self.map = [[S_NULL for col in range(self.big)] for row in range(self.big)]
+        self.show_map()
 
     def add_chess(self, pos_x, pos_y, type):
         if gobang.update_map(pos_x, pos_y, type):
@@ -100,6 +105,10 @@ while True:
             if event.key == 103:
                 gobang.generate_map()
                 gobang.show_map()
+            # 按键 r
+            if event.key == 114:
+                gobang.clear()
+                cnt = 0
 
     pygame.display.update()
     fps_clock.tick(frames_per_sec)
