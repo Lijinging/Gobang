@@ -66,6 +66,38 @@ class GoBang:
             return True
         return False
 
+    def show(self):
+        for i in range(self.big):
+            for j in range(self.big):
+                if self.map[j][i] == S_NULL:
+                    if i == 0:
+                        if j == 0:
+                            print('┌',end=' ')
+                        elif j == self.big - 1:
+                            print('┐',end=' ')
+                        else:
+                            print('┬',end=' ')
+                    elif i == self.big - 1:
+                        if j == 0:
+                            print('└',end=' ')
+                        elif j == self.big - 1:
+                            print('┘',end=' ')
+                        else:
+                            print('┴',end=' ')
+                    else:
+                        if j == 0:
+                            print('├',end=' ')
+                        elif j == self.big - 1:
+                            print('┤',end=' ')
+                        else:
+                            print('┼',end=' ')
+                elif self.map[j][i] == S_BLACK:
+                    print('●',end=' ')
+                else:
+                    print('○',end=' ')
+            print()
+        print()
+
     def show_map(self):
         self.draw_board()
         for (i, j) in [(i, j) for i in range(self.big) for j in range(self.big)]:
@@ -111,9 +143,12 @@ while True:
             # 计算对应的左边
             pos_x = int(((x - gobang.space) + gobang.size / 2) / gobang.size)
             pos_y = int(((y - gobang.space) + gobang.size / 2) / gobang.size)
+            if pos_x < 0 or pos_x >= 15 or pos_y < 0 or pos_y >= 15:
+                continue
             # print(pos_x, pos_y)
             x = gobang.space + pos_x * gobang.size - gobang.stone_b.get_width() / 2
             y = gobang.space + pos_y * gobang.size - gobang.stone_b.get_height() / 2
+
             if gobang.add_chess(pos_x, pos_y, S_BLACK):
                 gobang.show_map()
                 pygame.display.update()
@@ -123,12 +158,15 @@ while True:
                     s_next = ai_next(gobang.map)
                     print("RE AI:", s_next)
                 gobang.show_map()
+                gobang.show()
                 cnt = cnt + 1
         if event.type == MOUSEMOTION:
             x, y = pygame.mouse.get_pos()
             # 计算对应的左边
             pos_x = int(((x - gobang.space) + gobang.size / 2) / gobang.size)
             pos_y = int(((y - gobang.space) + gobang.size / 2) / gobang.size)
+            if pos_x < 0 or pos_x >= 15 or pos_y < 0 or pos_y >= 15:
+                continue
             gobang.show_map()
             gobang.draw_box(pos_x, pos_y)
 
