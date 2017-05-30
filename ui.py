@@ -7,8 +7,6 @@ import random
 from algorithm import *
 
 
-
-
 class GoBang:
     def __init__(self, space=30, size=30, big=15):
         self.space = space
@@ -69,29 +67,29 @@ class GoBang:
                 if self.map[i][j] == S_NULL:
                     if i == 0:
                         if j == 0:
-                            print('┌',end=' ')
+                            print('┌', end=' ')
                         elif j == self.big - 1:
-                            print('┐',end=' ')
+                            print('┐', end=' ')
                         else:
-                            print('┬',end=' ')
+                            print('┬', end=' ')
                     elif i == self.big - 1:
                         if j == 0:
-                            print('└',end=' ')
+                            print('└', end=' ')
                         elif j == self.big - 1:
-                            print('┘',end=' ')
+                            print('┘', end=' ')
                         else:
-                            print('┴',end=' ')
+                            print('┴', end=' ')
                     else:
                         if j == 0:
-                            print('├',end=' ')
+                            print('├', end=' ')
                         elif j == self.big - 1:
-                            print('┤',end=' ')
+                            print('┤', end=' ')
                         else:
-                            print('┼',end=' ')
+                            print('┼', end=' ')
                 elif self.map[j][i] == S_BLACK:
-                    print('●',end=' ')
+                    print('●', end=' ')
                 else:
-                    print('○',end=' ')
+                    print('○', end=' ')
             print()
         print()
 
@@ -118,10 +116,14 @@ class GoBang:
     def draw_last_box(self):
         if self.s_last != None:
             pygame.draw.aalines(self.screen, (110, 110, 110), True,
-                                [(self.space + (self.s_last[0] - 0.5) * self.size, self.space + (self.s_last[1] - 0.5) * self.size),
-                                 (self.space + (self.s_last[0] - 0.5) * self.size, self.space + (self.s_last[1] + 0.5) * self.size),
-                                 (self.space + (self.s_last[0] + 0.5) * self.size, self.space + (self.s_last[1] + 0.5) * self.size),
-                                 (self.space + (self.s_last[0] + 0.5) * self.size, self.space + (self.s_last[1] - 0.5) * self.size)], 1)
+                                [(self.space + (self.s_last[0] - 0.5) * self.size,
+                                  self.space + (self.s_last[1] - 0.5) * self.size),
+                                 (self.space + (self.s_last[0] - 0.5) * self.size,
+                                  self.space + (self.s_last[1] + 0.5) * self.size),
+                                 (self.space + (self.s_last[0] + 0.5) * self.size,
+                                  self.space + (self.s_last[1] + 0.5) * self.size),
+                                 (self.space + (self.s_last[0] + 0.5) * self.size,
+                                  self.space + (self.s_last[1] - 0.5) * self.size)], 1)
 
 
 gobang = GoBang()
@@ -131,7 +133,6 @@ cnt = 0
 ai = Brain()
 
 while True:
-
 
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -184,4 +185,3 @@ while True:
 
     pygame.display.update()
     fps_clock.tick(frames_per_sec)
-
