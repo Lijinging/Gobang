@@ -6,10 +6,7 @@ from sys import exit
 import random
 from algorithm import *
 
-S_NULL = 'n'
-S_BLACK = 'b'
-S_WHITE = 'w'
-S_LIST = [S_NULL, S_BLACK, S_WHITE]
+
 
 
 class GoBang:
@@ -56,9 +53,9 @@ class GoBang:
         x = gobang.space + pos_x * gobang.size - gobang.stone_b.get_width() / 2
         y = gobang.space + pos_y * gobang.size - gobang.stone_b.get_height() / 2
         if type == S_BLACK:
-            self.screen.blit(self.stone_b, (x, y))
+            self.screen.blit(self.stone_b, (y, x))
         if type == S_WHITE:
-            self.screen.blit(self.stone_w, (x, y))
+            self.screen.blit(self.stone_w, (y, x))
 
     def update_map(self, x, y, type):
         if self.map[x][y] == S_NULL:
@@ -69,7 +66,7 @@ class GoBang:
     def show(self):
         for i in range(self.big):
             for j in range(self.big):
-                if self.map[j][i] == S_NULL:
+                if self.map[i][j] == S_NULL:
                     if i == 0:
                         if j == 0:
                             print('┌',end=' ')
@@ -131,6 +128,7 @@ gobang = GoBang()
 frames_per_sec = 30
 fps_clock = pygame.time.Clock()
 cnt = 0
+ai = Brain()
 
 while True:
 
@@ -139,7 +137,7 @@ while True:
         if event.type == QUIT:
             exit()
         if event.type == MOUSEBUTTONDOWN:
-            x, y = pygame.mouse.get_pos()
+            y, x = pygame.mouse.get_pos()
             # 计算对应的左边
             pos_x = int(((x - gobang.space) + gobang.size / 2) / gobang.size)
             pos_y = int(((y - gobang.space) + gobang.size / 2) / gobang.size)
@@ -152,10 +150,10 @@ while True:
             if gobang.add_chess(pos_x, pos_y, S_BLACK):
                 gobang.show_map()
                 pygame.display.update()
-                s_next = ai_next(gobang.map)
+                s_next = ai.next(gobang.map, gobang.big)
                 print("AI:", s_next)
                 while gobang.add_chess(s_next[0], s_next[1], S_WHITE) is False:
-                    s_next = ai_next(gobang.map)
+                    s_next = ai.next(gobang.map, gobang.big)
                     print("RE AI:", s_next)
                 gobang.show_map()
                 gobang.show()
@@ -180,6 +178,9 @@ while True:
             if event.key == 114:
                 gobang.clear()
                 cnt = 0
+            # 按键s
+            if event.key == 115:
+                ai.next(gobang.map, gobang.big)
 
     pygame.display.update()
     fps_clock.tick(frames_per_sec)
