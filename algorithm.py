@@ -36,12 +36,16 @@ class Brain:
 
         for i in range(big):
             for j in range(big):
-                self.value[i][j] = self.value[i][j] + random.random() / 10
-                if map[i][j] != S_NULL:
-                    print(round_index(big, i, j, 1))
-                    for index_i, index_j in round_index(big, i, j, 1):
-                        if map[index_i][index_j] == S_NULL:
-                            self.value[index_i][index_j] = 1 + self.value[index_i][index_j]
+                self.value[i][j] = self.value[i][j]
+
+                dis_a = 5
+                for dis in range(1, dis_a):
+
+                    if map[i][j] != S_NULL:
+                        print(round_index(big, i, j, dis))
+                        for index_i, index_j in round_index(big, i, j, dis):
+                            if map[index_i][index_j] == S_NULL:
+                                self.value[index_i][index_j] = dis_a - dis + self.value[index_i][index_j]
 
         # for i in range(big):
         #    for j in range(big):
@@ -51,7 +55,7 @@ class Brain:
 
         a = numpy.array(self.value)
         print(a)
-        print(a.argmax())
+        print((a + numpy.random.normal(scale=0.5, size=big*big).reshape((big, big))).argmax())
 
 
 def ai_next(map):
