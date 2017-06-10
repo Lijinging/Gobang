@@ -30,7 +30,7 @@ class Brain:
         self.value = [[min(col, row, 14 - col, 14 - row) for col in range(big)] for row in range(big)]
 
         round_index = lambda big, x, y, n: [(i + x, j + y)
-                                            for i in [-n, 0, n] for j in [-n, 0, n]
+                                            for i in range(-n, n+1) for j in range(-n, n+1)
                                             if 0 <= (i + x) < big
                                             if 0 <= (j + y) < big]
 
