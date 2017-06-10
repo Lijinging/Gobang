@@ -16,7 +16,7 @@ class GoBang:
         self.stone_w = pygame.image.load(r"res/stone_w.png")
         self.stone_b = pygame.image.load(r"res/stone_b.png")
         self.background = pygame.image.load(r"res/background.jpg")
-        self.map = [[S_NULL for col in range(self.big)] for row in range(self.big)]
+        self.map = numpy.array([[S_NULL for col in range(self.big)] for row in range(self.big)])
         self.s_last = None
 
         pygame.init()
@@ -38,7 +38,7 @@ class GoBang:
                                (self.space + i * self.size, self.space + 14 * self.size), 1)
 
     def clear(self):
-        self.map = [[S_NULL for col in range(self.big)] for row in range(self.big)]
+        self.map = numpy.array([[S_NULL for col in range(self.big)] for row in range(self.big)])
         self.show_map()
 
     def add_chess(self, pos_x, pos_y, type):
@@ -117,14 +117,14 @@ class GoBang:
     def draw_last_box(self):
         if self.s_last != None:
             pygame.draw.aalines(self.screen, (110, 110, 110), True,
-                                [(self.space + (self.s_last[0] - 0.5) * self.size,
-                                  self.space + (self.s_last[1] - 0.5) * self.size),
-                                 (self.space + (self.s_last[0] - 0.5) * self.size,
-                                  self.space + (self.s_last[1] + 0.5) * self.size),
-                                 (self.space + (self.s_last[0] + 0.5) * self.size,
-                                  self.space + (self.s_last[1] + 0.5) * self.size),
-                                 (self.space + (self.s_last[0] + 0.5) * self.size,
-                                  self.space + (self.s_last[1] - 0.5) * self.size)], 1)
+                                [(self.space + (self.s_last[1] - 0.5) * self.size,
+                                  self.space + (self.s_last[0] - 0.5) * self.size),
+                                 (self.space + (self.s_last[1] - 0.5) * self.size,
+                                  self.space + (self.s_last[0] + 0.5) * self.size),
+                                 (self.space + (self.s_last[1] + 0.5) * self.size,
+                                  self.space + (self.s_last[0] + 0.5) * self.size),
+                                 (self.space + (self.s_last[1] + 0.5) * self.size,
+                                  self.space + (self.s_last[0] - 0.5) * self.size)], 1)
 
 
 gobang = GoBang()
