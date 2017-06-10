@@ -158,7 +158,7 @@ while True:
                     s_next = ai.next(gobang.map, gobang.big)
                     print("RE AI:", s_next)
                 gobang.show_map()
-                gobang.show()
+                # gobang.show()
                 cnt = cnt + 1
         if event.type == MOUSEMOTION:
             x, y = pygame.mouse.get_pos()

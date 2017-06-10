@@ -9,6 +9,73 @@ S_WHITE = 'w'
 S_LIST = [S_NULL, S_BLACK, S_WHITE]
 
 
+# 这里x代表自己的棋子, o代表对方棋子或者障碍
+
+KEY = {
+    # 活四
+    6000:[
+        '.xxxx.'
+    ],
+    # 冲四、跳四
+    5000:[
+        '.xxxxo',
+        'xxx.x',
+        'xx.xx',
+        'x.xxx',
+        'oxxxx.'
+    ],
+    # 活三
+    2000:[
+        '.xxx.',
+        '.xx.x.',
+        '.x.xx.'
+    ],
+    # 死三
+    0:[
+        'oxxxo',
+        'oxxx.o',
+        'oxx.xo',
+        'ox.xxo',
+        'o.xxxo'
+    ],
+    # 冲三、跳三
+    1000:[
+        '..xxxo',
+        'oxxx..',
+        'oxx.x.',
+        'oxx..x',
+        'ox.x.x',
+        'ox.xx.',
+        'ox..xx',
+        '..xxxo',
+        '.x.xxo',
+        'x..xxo',
+        '.xx.xo',
+        'xx..xo'
+    ],
+    # 活二、跳二
+    400:[
+        '.xx.',
+        '.x.x.',
+        '.x..x.'
+    ],
+    # 冲二
+    200:[
+        'oxx...',
+        'ox.x..',
+        'ox..x.',
+        'ox...x',
+        '...xxo',
+        '..x.xo',
+        '.x..xo',
+        'x...x.'
+    ]
+}
+
+
+
+
+
 class Brain:
     def transToStr(self, map):
         for i in range(15):
@@ -23,11 +90,11 @@ class Brain:
 
     def next(self, map, big):
         self.getValue_near(map, big)
-        index = numpy.array(self.value).argmax()
+        index = self.value.argmax()
         return int(index / big), index % big
 
     def getValue_near(self, map, big):
-        self.value = [[min(col, row, 14 - col, 14 - row) for col in range(big)] for row in range(big)]
+        self.value = numpy.array([[min(col, row, 14 - col, 14 - row) for col in range(big)] for row in range(big)])
 
         round_index = lambda big, x, y, n: [(i + x, j + y)
                                             for i in range(-n, n+1) for j in range(-n, n+1)
@@ -47,15 +114,19 @@ class Brain:
                             if map[index_i][index_j] == S_NULL:
                                 self.value[index_i][index_j] = dis_a - dis + self.value[index_i][index_j]
 
+        for i in range(big):
+            for j in range(big):
+                if map[i][j] != S_NULL:
+                    self.value[i][j] = 0
+
         # for i in range(big):
         #    for j in range(big):
         #        print(self.value[i][j], end=' ')
         #    print()
         # print()
 
-        a = numpy.array(self.value)
-        print(a)
-        print((a + numpy.random.normal(scale=0.5, size=big*big).reshape((big, big))).argmax())
+        print(self.value)
+        print((self.value + numpy.random.normal(scale=0.5, size=big*big).reshape((big, big))).argmax())
 
 
 def ai_next(map):
