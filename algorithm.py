@@ -22,11 +22,11 @@ class Brain:
         pass
 
     def next(self, map, big):
-        self.getValue(map, big)
+        self.getValue_near(map, big)
         index = numpy.array(self.value).argmax()
         return int(index / big), index % big
 
-    def getValue(self, map, big):
+    def getValue_near(self, map, big):
         self.value = [[min(col, row, 14 - col, 14 - row) for col in range(big)] for row in range(big)]
 
         round_index = lambda big, x, y, n: [(i + x, j + y)
