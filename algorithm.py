@@ -131,25 +131,39 @@ class Brain:
         print("index = %d" % index)
         return int(index / big), index % big
 
-    # 统计评分超过2000的次数
-    def next_MCTS(self, map, big, chess=S_WHITE, lastdeep=3, cnt_w=0, cnt_b=0):
-        cnt_w, cnt_b = cnt_w, cnt_b
-        if lastdeep < 0:
-            return
-        time = 10
+
+    def next_MCTS(self, map, big):
+        scorearray = self.next_MCTS_step(map, big)
+        index = scorearray.argmax()
+        return int(index / big), index % big
+
+
+    # 评分每次加最大值，胜利是20000
+    def next_MCTS_step(self, map, big, chess=S_WHITE, lastdeep=1, step=4):
+        if lastdeep<0:
+            return numpy.zeros((big, big), dtype='int32')
         self.getValue(map, big, False)
-        defense = self.value_s.max()
-        attack = self.value_a.max()
-        score = defense + attack
-        indices = largest_indices(score, time)
-        for i in range(time):
-            map_n = map
+        #defense = self.value_s.max()
+        #attack = self.value_a.max()
+        #score = defense + attack
+        indices = largest_indices(self.value_s+self.value_a, step)
+        # cnt_w = numpy.sum(self.value_s[indices[:][:3]])
+        # cnt_b = numpy.sum(self.value_a[indices[:][:3]])
+        scorearray = numpy.zeros((big, big), dtype='int32')
+        scorearray[indices[:][:4]] = self.value_s[indices[:][:3]] + self.value_a[indices[:][:3]]
+        if chess==S_WHITE:
+            next_chess = S_BLACK
+        else:
+            next_chess = S_WHITE
+        for i in range(step):
+            map_n = map.copy()
+            print('test:(%d,%d)'% (indices[0][i], indices[1][i]))
             map_n[indices[0][i]][indices[1][i]] = chess
-
-            self.getValue(map_n, big, False)
-
             # 进入迭代
-            self.next_MCTS(map_n, big, chess=S_BLACK, lastdeep=lastdeep-1)
+            scorestep = self.next_MCTS_step(map_n, big, chess=next_chess, lastdeep=lastdeep-1)
+            sum = 0 + numpy.sum(scorestep)
+            scorearray[indices[0][i]][indices[1][i]] += sum
+        return scorearray
 
 
 
@@ -160,7 +174,7 @@ class Brain:
         attack = self.value_a.max()
         print('defense max = %d' % defense)
         print('attack  max = %d' % attack)
-        if defense > attack*0.7:
+        if defense > attack *0.1:
             index = self.value_s.argmax()
         else:
             index = (self.value_a + 0.3*self.value_s).argmax()
@@ -179,7 +193,6 @@ class Brain:
 
 
     def getValue(self, map, big, show=True, selfchess=S_WHITE):
-        map_s = numpy.full((big, big), S_NULL)
         if selfchess==S_WHITE:
             ch_s = S_WHITE
             ch_d = S_BLACK
@@ -187,11 +200,9 @@ class Brain:
             ch_s = S_BLACK
             ch_d = S_WHITE
         # 自己的评分
-        self.value_s = numpy.array(
-            [[min(col, row, big - 1 - col, big - 1 - row) for col in range(big)] for row in range(big)]) - 1
+        self.value_s = numpy.array([[min(col, row, big - col - 1, big - row - 1) for col in range(big)] for row in range(big)])
         # 对方的评分
-        self.value_a = numpy.array(
-            [[min(col, row, big - 1 - col, big - 1 - row) for col in range(big)] for row in range(big)])
+        self.value_a = numpy.array([[min(col, row, big - col - 1, big - row - 1) for col in range(big)] for row in range(big)])
 
 
 
@@ -224,8 +235,8 @@ class Brain:
                     index_v = [index[0][1:k] - 1, index[1][1:k] - 1]
                     code_s = transcode(map[index_v[0], index_v[1]].tolist(), ch_s)
                     code_a = transcode(map[index_v[0], index_v[1]].tolist(), ch_d)
-                    self.value_s[index_v[0], index_v[1]] += int(getValue_one(code_a)*1.3)
-                    self.value_a[index_v[0], index_v[1]] += int(getValue_one(code_s)*1.3)
+                    self.value_s[index_v[0], index_v[1]] += int(getValue_one(code_a)*1.2)
+                    self.value_a[index_v[0], index_v[1]] += int(getValue_one(code_s)*1.2)
 
         for i in range(6, big):
             for j in range(big - 6):
@@ -234,8 +245,8 @@ class Brain:
                     index_v = [index[0][1:k] - 1, index[1][1:k] - 1]
                     code_s = transcode(map[index_v[0], index_v[1]].tolist(), ch_s)
                     code_a = transcode(map[index_v[0], index_v[1]].tolist(), ch_d)
-                    self.value_s[index_v[0], index_v[1]] += int(getValue_one(code_a)*1.3)
-                    self.value_a[index_v[0], index_v[1]] += int(getValue_one(code_s)*1.3)
+                    self.value_s[index_v[0], index_v[1]] += int(getValue_one(code_a)*1.2)
+                    self.value_a[index_v[0], index_v[1]] += int(getValue_one(code_s)*1.2)
 
 
 
@@ -249,12 +260,13 @@ class Brain:
                     self.value_s[i][j] = 0
                     self.value_a[i][j] = 0
 
-
-        print(numpy.array_str(self.value_s, 100))
+        if show:
+            print(numpy.array_str(self.value_s, 100))
         self.value_s = self.value_s.astype('float')
         self.value_s += numpy.random.normal(scale=0.5, size=big ** 2).reshape((big, big))
-        print((self.value_s + numpy.random.normal(scale=0.5, size=big ** 2).reshape(
-            (big, big))).argmax())
+        if show:
+            print((self.value_s + numpy.random.normal(scale=0.5, size=big ** 2).reshape(
+                (big, big))).argmax())
 
     def getValue_near(self, map, big):
         self.value = numpy.array([[min(col, row, 14 - col, 14 - row) for col in range(big)] for row in range(big)])
