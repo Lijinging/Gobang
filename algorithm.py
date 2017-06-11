@@ -3,6 +3,7 @@ import random
 
 import numpy
 import math
+import bottleneck
 
 S_NULL = '.'
 S_BLACK = 'b'
@@ -14,14 +15,20 @@ S_LIST = [S_NULL, S_BLACK, S_WHITE]
 KEY = {
     # 活四
     6000: [
-        '.xxxx.'
+        '.xxxx.',
+        '.x.xxx.',
+        '.xx.xx.',
+        '.xxx.x'
     ],
     # 冲四、跳四
     5000: [
         '.xxxxo',
-        'xxx.x',
-        'xx.xx',
-        'x.xxx',
+        'x.xxxo',
+        'xx.xxo',
+        'xxx.xo',
+        'oxxx.x',
+        'oxx.xx',
+        'ox.xxx',
         'oxxxx.'
     ],
     # 活三
@@ -39,7 +46,7 @@ KEY = {
         'o.xxxo'
     ],
     # 冲三、跳三
-    1000: [
+    800: [
         '..xxxo',
         'oxxx..',
         'oxx.x.',
@@ -54,7 +61,7 @@ KEY = {
         'xx..xo'
     ],
     # 活二、跳二
-    400: [
+    420: [
         '.xx..',
         '..xx.',
         '.x.x.',
@@ -70,8 +77,22 @@ KEY = {
         '..x.xo',
         '.x..xo',
         'x...x.'
+    ],
+    # 一个的
+    40:[
+        '.x...',
+        '..x..',
+        '...x.',
+        '....x'
     ]
 }
+
+def largest_indices(ary, n):
+    """Returns the n largest indices from a numpy array."""
+    flat = ary.flatten()
+    indices = numpy.argpartition(flat, -n)[-n:]
+    indices = indices[numpy.argsort(-flat[indices])]
+    return numpy.unravel_index(indices, ary.shape)
 
 
 def transcode(code, self_chess=S_BLACK):
@@ -103,16 +124,68 @@ class Brain:
     def find(self, instr, key):
         pass
 
-    def next(self, map, big):
+    def next_defense(self, map, big):
         self.getValue(map, big)
         print('max = %d' % self.value_s.max())
         index = self.value_s.argmax()
         print("index = %d" % index)
         return int(index / big), index % big
 
-    def getValue(self, map, big):
-        map_s = numpy.full((big, big), S_NULL)
+    # 统计评分超过2000的次数
+    def next_MCTS(self, map, big, chess=S_WHITE, lastdeep=3, cnt_w=0, cnt_b=0):
+        cnt_w, cnt_b = cnt_w, cnt_b
+        if lastdeep < 0:
+            return
+        time = 10
+        self.getValue(map, big, False)
+        defense = self.value_s.max()
+        attack = self.value_a.max()
+        score = defense + attack
+        indices = largest_indices(score, time)
+        for i in range(time):
+            map_n = map
+            map_n[indices[0][i]][indices[1][i]] = chess
 
+            self.getValue(map_n, big, False)
+
+            # 进入迭代
+            self.next_MCTS(map_n, big, chess=S_BLACK, lastdeep=lastdeep-1)
+
+
+
+
+    def next(self, map, big):
+        self.getValue(map, big)
+        defense = self.value_s.max()
+        attack = self.value_a.max()
+        print('defense max = %d' % defense)
+        print('attack  max = %d' % attack)
+        if defense > attack*0.7:
+            index = self.value_s.argmax()
+        else:
+            index = (self.value_a + 0.3*self.value_s).argmax()
+        print("index = %d" % index)
+        return int(index / big), index % big
+
+    def next_max(self, map, big):
+        self.getValue(map, big)
+        defense = self.value_s.max()
+        attack = self.value_a.max()
+        print('defense max = %d' % defense)
+        print('attack  max = %d' % attack)
+        index = (self.value_s+self.value_a).argmax()
+        print("index = %d" % index)
+        return int(index / big), index % big
+
+
+    def getValue(self, map, big, show=True, selfchess=S_WHITE):
+        map_s = numpy.full((big, big), S_NULL)
+        if selfchess==S_WHITE:
+            ch_s = S_WHITE
+            ch_d = S_BLACK
+        else:
+            ch_s = S_BLACK
+            ch_d = S_WHITE
         # 自己的评分
         self.value_s = numpy.array(
             [[min(col, row, big - 1 - col, big - 1 - row) for col in range(big)] for row in range(big)]) - 1
@@ -128,20 +201,20 @@ class Brain:
                 index = [numpy.array([i] * 7), numpy.arange(j, j + 7)]
                 for k in range(5, 8):
                     index_v = [index[0][1:k] - 1, index[1][1:k] - 1]
-                    code_s = transcode(map[index_v[0], index_v[1]].tolist(), S_WHITE)
-                    code_a = transcode(map[index_v[0], index_v[1]].tolist(), S_BLACK)
+                    code_s = transcode(map[index_v[0], index_v[1]].tolist(), ch_s)
+                    code_a = transcode(map[index_v[0], index_v[1]].tolist(), ch_d)
                     self.value_s[index_v[0], index_v[1]] += getValue_one(code_a)
-                    self.value_a[index_v[0], index_v[1]] += getValue_one(code_a)
+                    self.value_a[index_v[0], index_v[1]] += getValue_one(code_s)
         #上下方向
         for j in range(big):
             for i in range(big - 6):
                 index = [numpy.arange(i, i + 7), numpy.array([j] * 7)]
                 for k in range(5, 8):
                     index_v = [index[0][1:k] - 1, index[1][1:k] - 1]
-                    code_s = transcode(map[index_v[0], index_v[1]].tolist(), S_WHITE)
-                    code_a = transcode(map[index_v[0], index_v[1]].tolist(), S_BLACK)
+                    code_s = transcode(map[index_v[0], index_v[1]].tolist(), ch_s)
+                    code_a = transcode(map[index_v[0], index_v[1]].tolist(), ch_d)
                     self.value_s[index_v[0], index_v[1]] += getValue_one(code_a)
-                    self.value_a[index_v[0], index_v[1]] += getValue_one(code_a)
+                    self.value_a[index_v[0], index_v[1]] += getValue_one(code_s)
 
         #上左 下右
         for i in range(big - 6):
@@ -149,20 +222,20 @@ class Brain:
                 index = [numpy.arange(i, i + 7), numpy.arange(j, j + 7)]
                 for k in range(5, 8):
                     index_v = [index[0][1:k] - 1, index[1][1:k] - 1]
-                    code_s = transcode(map[index_v[0], index_v[1]].tolist(), S_WHITE)
-                    code_a = transcode(map[index_v[0], index_v[1]].tolist(), S_BLACK)
-                    self.value_s[index_v[0], index_v[1]] += getValue_one(code_a)
-                    self.value_a[index_v[0], index_v[1]] += getValue_one(code_a)
+                    code_s = transcode(map[index_v[0], index_v[1]].tolist(), ch_s)
+                    code_a = transcode(map[index_v[0], index_v[1]].tolist(), ch_d)
+                    self.value_s[index_v[0], index_v[1]] += int(getValue_one(code_a)*1.3)
+                    self.value_a[index_v[0], index_v[1]] += int(getValue_one(code_s)*1.3)
 
         for i in range(6, big):
             for j in range(big - 6):
                 index = [numpy.arange(i, i - 7, -1), numpy.arange(j, j + 7)]
                 for k in range(5, 8):
                     index_v = [index[0][1:k] - 1, index[1][1:k] - 1]
-                    code_s = transcode(map[index_v[0], index_v[1]].tolist(), S_WHITE)
-                    code_a = transcode(map[index_v[0], index_v[1]].tolist(), S_BLACK)
-                    self.value_s[index_v[0], index_v[1]] += getValue_one(code_a)
-                    self.value_a[index_v[0], index_v[1]] += getValue_one(code_a)
+                    code_s = transcode(map[index_v[0], index_v[1]].tolist(), ch_s)
+                    code_a = transcode(map[index_v[0], index_v[1]].tolist(), ch_d)
+                    self.value_s[index_v[0], index_v[1]] += int(getValue_one(code_a)*1.3)
+                    self.value_a[index_v[0], index_v[1]] += int(getValue_one(code_s)*1.3)
 
 
 
@@ -174,8 +247,10 @@ class Brain:
             for j in range(big):
                 if map[i][j] != S_NULL:
                     self.value_s[i][j] = 0
+                    self.value_a[i][j] = 0
 
-        print(self.value_s)
+
+        print(numpy.array_str(self.value_s, 100))
         self.value_s = self.value_s.astype('float')
         self.value_s += numpy.random.normal(scale=0.5, size=big ** 2).reshape((big, big))
         print((self.value_s + numpy.random.normal(scale=0.5, size=big ** 2).reshape(
