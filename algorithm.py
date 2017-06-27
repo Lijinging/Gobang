@@ -14,14 +14,14 @@ S_LIST = [S_NULL, S_BLACK, S_WHITE]
 
 KEY = {
     # 活四
-    6000: [
+    8192: [
         '.xxxx.',
         '.x.xxx.',
         '.xx.xx.',
         '.xxx.x'
     ],
     # 冲四、跳四
-    5000: [
+    4096: [
         '.xxxxo',
         'x.xxxo',
         'xx.xxo',
@@ -32,7 +32,7 @@ KEY = {
         'oxxxx.'
     ],
     # 活三
-    2000: [
+    4000: [
         '.xxx.',
         '.xx.x.',
         '.x.xx.'
@@ -46,7 +46,7 @@ KEY = {
         'o.xxxo'
     ],
     # 冲三、跳三
-    800: [
+    2048: [
         '..xxxo',
         'oxxx..',
         'oxx.x.',
@@ -61,14 +61,14 @@ KEY = {
         'xx..xo'
     ],
     # 活二、跳二
-    420: [
+    2000: [
         '.xx..',
         '..xx.',
         '.x.x.',
         '.x..x.'
     ],
     # 冲二
-    200: [
+    1024: [
         'oxx...',
         'ox.x..',
         'ox..x.',
@@ -86,6 +86,78 @@ KEY = {
         '....x'
     ]
 }
+
+KEY = {
+    # 活四
+    8192: [
+        '.xxxx.'
+    ],
+    # 冲四、跳四
+    4096: [
+        '.xxxxo',
+        'xxx.x',
+        'xx.xx',
+        'x.xxx',
+        'oxxxx.'
+    ],
+    # 活三
+    4000: [
+        '.xxx.',
+        '.xx.x.',
+        '.x.xx.'
+    ],
+    # 死三
+    0: [
+        'oxxxo',
+        'oxxx.o',
+        'oxx.xo',
+        'ox.xxo',
+        'o.xxxo'
+    ],
+    # 冲三、跳三
+    2048: [
+        '..xxxo',
+        'oxxx..',
+        'oxx.x.',
+        'oxx..x',
+        'ox.x.x',
+        'ox.xx.',
+        'ox..xx',
+        '..xxxo',
+        '.x.xxo',
+        'x..xxo',
+        '.xx.xo',
+        'xx..xo'
+    ],
+    # 活二、跳二
+    2000: [
+        '.xx..',
+        '..xx.',
+        '.x.x.',
+        '.x..x.'
+    ],
+    # 冲二
+    1024: [
+        'oxx...',
+        'ox.x..',
+        'ox..x.',
+        'ox...x',
+        '...xxo',
+        '..x.xo',
+        '.x..xo',
+        'x...x.'
+    ]
+}
+
+
+def cntBigThanX_2d(nparr, x):
+    cnt = 0
+    for i in nparr:
+        for j in i:
+            if j > x:
+                cnt = cnt + 1
+    return cnt
+
 
 def largest_indices(ary, n):
     """Returns the n largest indices from a numpy array."""
@@ -161,8 +233,8 @@ class Brain:
             map_n[indices[0][i]][indices[1][i]] = chess
             # 进入迭代
             scorestep = self.next_MCTS_step(map_n, big, chess=next_chess, lastdeep=lastdeep-1)
-            sum = 0 + numpy.sum(scorestep)
-            scorearray[indices[0][i]][indices[1][i]] += sum
+            # sum = 0 + numpy.sum(scorestep)
+            scorearray[indices[0][i]][indices[1][i]] += cntBigThanX_2d(scorestep, 4000)
         return scorearray
 
 

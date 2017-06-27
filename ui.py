@@ -155,10 +155,10 @@ while True:
             if gobang.add_chess(pos_x, pos_y, S_BLACK):
                 gobang.show_map()
                 pygame.display.update()
-                s_next = ai.next_MCTS(gobang.map, int(gobang.big))
+                s_next = ai.next(gobang.map, int(gobang.big))
                 print("AI:", s_next)
                 while gobang.add_chess(s_next[0], s_next[1], S_WHITE) is False:
-                    s_next = ai.next_MCTS(gobang.map, int(gobang.big))
+                    s_next = ai.next(gobang.map, int(gobang.big))
                     print("RE AI:", s_next)
                 gobang.show_map()
                 # gobang.show()
