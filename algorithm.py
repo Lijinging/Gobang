@@ -87,68 +87,6 @@ KEY = {
     ]
 }
 
-KEY = {
-    # 活四
-    8192: [
-        '.xxxx.'
-    ],
-    # 冲四、跳四
-    4096: [
-        '.xxxxo',
-        'xxx.x',
-        'xx.xx',
-        'x.xxx',
-        'oxxxx.'
-    ],
-    # 活三
-    4000: [
-        '.xxx.',
-        '.xx.x.',
-        '.x.xx.'
-    ],
-    # 死三
-    0: [
-        'oxxxo',
-        'oxxx.o',
-        'oxx.xo',
-        'ox.xxo',
-        'o.xxxo'
-    ],
-    # 冲三、跳三
-    2048: [
-        '..xxxo',
-        'oxxx..',
-        'oxx.x.',
-        'oxx..x',
-        'ox.x.x',
-        'ox.xx.',
-        'ox..xx',
-        '..xxxo',
-        '.x.xxo',
-        'x..xxo',
-        '.xx.xo',
-        'xx..xo'
-    ],
-    # 活二、跳二
-    2000: [
-        '.xx..',
-        '..xx.',
-        '.x.x.',
-        '.x..x.'
-    ],
-    # 冲二
-    1024: [
-        'oxx...',
-        'ox.x..',
-        'ox..x.',
-        'ox...x',
-        '...xxo',
-        '..x.xo',
-        '.x..xo',
-        'x...x.'
-    ]
-}
-
 
 def cntBigThanX_2d(nparr, x):
     cnt = 0
